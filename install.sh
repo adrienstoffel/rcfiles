@@ -110,7 +110,9 @@ elif [[ "${pkgmgr}" == "apt" ]]; then
 # CentOS 8 requirements
 elif [[ "${pkgmgr}" == "yum" ]]; then
 	sudo yum -y install epel-release yum-utils
+	sudo yum -y update
 	if [[ "${has_docker}" == "y" ]]; then
+		sudo yum -y remove runc
 		sudo yum-config-manager \
 			--add-repo \
 			https://download.docker.com/linux/centos/docker-ce.repo
@@ -359,7 +361,6 @@ else # CentOS/Fedora
 	automake
 	bpython
 	bpython3
-	build-essential
 	clang
 	cmake
 	cscope
@@ -467,7 +468,7 @@ elif [[ "${pkgmgr}" == "apt" ]]; then
 		sudo pip3 install pwntools
 	fi
 elif [[ "${pkgmgr}" == "yum" ]]; then
-	sudo yum install ${pkgs}
+	sudo yum install --allowerasing ${pkgs}
 fi
 
 if [[ "${has_pwn}" == "y" ]]; then
@@ -529,6 +530,9 @@ if [[ "${pkgmgr}" == "apt" ]]; then
 	sudo git clone https://github.com/robbyrussell/oh-my-zsh/
 elif [[ "${pkgmgr}" == "yay" ]]; then
 	yay -S aur/oh-my-zsh-git
+elif [[ "${pkgmgr}" == "yum" ]]; then
+	cd /usr/share
+	sudo git clone https://github.com/robbyrussell/oh-my-zsh/
 fi
 
 # setup tmux
