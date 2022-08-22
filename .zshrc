@@ -49,7 +49,7 @@ ZSH_CUSTOM=~/.oh-my-zsh/custom
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git archlinux colorize django python zsh-syntax-highlighting dircycle)
+plugins=(git archlinux colorize python zsh-syntax-highlighting dircycle)
 
 # User configuration
 
@@ -119,8 +119,8 @@ alias rd='rmdir'
 alias top='htop'
 alias grep='grep --color'
 alias psc='ps xawf -eo pid,user,cgroup,args'
-alias py='ipython2'
-alias bpy='bpython2'
+alias py='ipython'
+alias bpy='bpython'
 alias py3='ipython3'
 alias bpy3='bpython3'
 
@@ -134,20 +134,19 @@ export XDG_CONFIG_HOME=$HOME/.config/
 
 # utilities
 
-alias checksec='/scripts/checksec.sh'
-alias xrop='/scripts/xrop/xrop'
-alias rp++='/scripts/rp-lin-x64'
+alias checksec='pwn checksec'
 
-alias peda='gdb -q -x /scripts/peda/peda.py'
-alias gdb='gdb -q -x /scripts/Gdbinit/gdbinit'
+alias peda='gdb -q -nx -x /scripts/peda/peda.py'
+alias gdb='gdb -q'
+alias gef='gdb -q -nx -x /usr/share/gef/gef.py'
 alias hcat='pygmentize -f terminal256'
 alias tmux='TERM=screen-256color-bce tmux'
 
 # laptop specific
 
 alias irc='ssh -D9999 -i ~/.ssh/id_rsa_irc -R 4321:localhost:4321 awe@w3challs.com -t ". /etc/profile; . ~/.profile; . ~/.zshrc; TERM=screen-256color-bce tmux attach"'
+alias update='yay -Syu --combinedupgrade'
 
 export PAGER=most
-export PATH=$PATH:/home/awe/.gem/ruby/2.0.0/bin
 
-export BROWSER="google-chrome-stable"
+export BROWSER="chromium"

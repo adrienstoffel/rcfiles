@@ -1,6 +1,6 @@
 [user]
 	email = awe@w3challs.com
-	name = awe
+	name = Adrien Stoffel
 [push]
 	default = matching
 [diff]
@@ -9,3 +9,5 @@
 	prompt = false
 [alias]
 	d = difftool
+[color]
+	ui = auto
