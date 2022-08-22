@@ -11,3 +11,5 @@
 	d = difftool
 [color]
 	ui = auto
+[safe]
+	directory = /etc/rcfiles
