@@ -136,7 +136,7 @@ export XDG_CONFIG_HOME=$HOME/.config/
 
 alias checksec='pwn checksec'
 
-alias peda='gdb -q -nx -x /scripts/peda/peda.py'
+alias peda='gdb -q -nx -x /usr/share/peda/peda.py'
 alias gdb='gdb -q'
 alias gef='gdb -q -nx -x /usr/share/gef/gef.py'
 alias hcat='pygmentize -f terminal256'

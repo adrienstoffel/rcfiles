@@ -106,6 +106,15 @@ elif [[ "${pkgmgr}" == "apt" ]]; then
 		fi
 	fi
 	sudo apt-get update
+
+# CentOS 8 requirements
+elif [[ "${pkgmgr}" == "yum" ]]; then
+	sudo yum -y install epel-release yum-utils
+	if [[ "${has_docker}" == "y" ]]; then
+		sudo yum-config-manager \
+			--add-repo \
+			https://download.docker.com/linux/centos/docker-ce.repo
+	fi
 fi
 
 base_pkgs=""
@@ -344,8 +353,78 @@ EOF
 )
 	tex_pkgs="texlive"
 else # CentOS/Fedora
-	echo "CentOS/Fedora not supported yet."
-	exit 1
+	# CentOS (tested on 8)
+
+	base_pkgs=$(cat << EOF
+	automake
+	bpython
+	bpython3
+	build-essential
+	clang
+	cmake
+	cscope
+	ctags
+	curl
+	gdb
+	git
+	gpg
+	hexedit
+	htop
+	ipython
+	ipython3
+	ltrace
+	most
+	nano
+	net-tools
+	open-vm-tools
+	openssh
+	php
+	powerline
+	python2-pip
+	python3
+	python3-colorama
+	python3-pip
+	python3-requests
+	rsync
+	screen
+	socat
+	sshpass
+	strace
+	tcpdump
+	tmux
+	tmux-powerline
+	vim
+	vim-powerline
+	wget
+	xinetd
+	zsh
+EOF
+)
+	pwn_pkgs=$(cat << EOF
+	patchelf
+EOF
+)
+	desktop_pkgs=$(cat << EOF
+	chromium
+	dolphin
+	eog
+	evince
+	keepassxc
+	openvpn
+	remmina
+	wireshark
+	xfce4-screenshooter
+	xfce4-terminal
+EOF
+)
+	docker_pkgs=$(cat << EOF
+	docker-ce
+	docker-ce-cli
+	containerd.io
+	docker-compose-plugin
+EOF
+)
+	tex_pkgs="texlive"
 fi
 
 pkgs="${base_pkgs}"
